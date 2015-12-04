@@ -1,7 +1,6 @@
-// Copy to app/scripts/config.js
-
 nodelistconfig = {
 	'dataPath': '',
-	'mapPath': '',
-	'siteName': 'DEV Freifunk München',
+	'mapPath': 'http://tecff.de/map/',
+        'graphPath': 'https://ffmuc.net/stats/dashboard/db/',
+	'siteName': 'Freifunk Altdorf',
 };
