@@ -1,0 +1,31 @@
+# How to setup nodelist
+#
+# This nodelist is derivated from https://github.com/freifunkMUC/nodelist.git
+# Thanks to: Skruppy <skruppy@onmars.eu>
+# 25.09.2015 Christian Pacher
+#
+# Do this commands:
+
+mkdir nodelist
+cd nodelist
+mkdir scripts
+mkdir styles
+git clone https://github.com/freifunkMUC/nodelist.git /tmp/nodelist
+wget http://code.jquery.com/jquery-1.11.3.js -O scripts/jquery.js
+wget http://momentjs.com/downloads/moment.js -O scripts/moment.js
+wget http://w2ui.com/web/downloads/w2ui-1.4.3.zip -O /tmp/w2ui-1.4.3.zip
+unzip -o /tmp/w2ui-1.4.3.zip -d /tmp
+cp /tmp/w2ui-1.4.3.js scripts/w2ui.js
+cp /tmp/w2ui-1.4.3.css styles/w2ui.css
+cp /tmp/nodelist/app/index.html index.html
+cp /tmp/nodelist/app/styles/main.scss styles/main.css
+cp /tmp/nodelist/app/scripts/main.js scripts/main.js
+cp /tmp/nodelist/config.js.local scripts/config.js
+wget http://nodelist.altdorf.freifunk.tk/dir/patch-file -O /tmp/patch-file
+patch -p1 </tmp/patch-file
+
+# Link the files nodes.json and graph.json fetched with wget from the corresponding community per cron to nodelist
+# Setup a Webserver to the nodelist directory
+# Sources are in http://nodelist.altdorf.freifunk.tk/dir
+# index.html main.js main.css and config.js are modified by me.
+
