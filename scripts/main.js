@@ -43,11 +43,11 @@ var enums = {gateways: {}, versions: {}, models: {}, sites: {}};
 
 $.each(rawNodes, function(i, node){
 	if(typeof node.nodeinfo == undefined) {
-		//console.log('Useless node:', node);
+		console.log('Useless node:', node);
 		return;
 	}
 	if(i in nodes) {
-		//console.log('Duplicate node:', nodes[i], node);
+		console.log('Duplicate node:', nodes[i], node);
 		return;
 	}
 	nodes[i] = node;
@@ -93,6 +93,100 @@ $.each(nodes, function(i, node){
 		row.style = 'background: #ff0000;'
 	}
 	row.hostname = ni.hostname;
+
+
+//            "location" : {
+//               "latitude" : 48.56009,
+//               "longitude" : 12.11489
+//            },
+
+        if(typeof ni.location != 'undefined') {
+                row.loclat = ni.location.latitude;
+                row.loclon = ni.location.longitude;
+//                enums.models[row.model] = true;
+        }
+
+
+//            "network" : {
+//               "addresses" : [
+//                  "2001:470:7ca1:ff80:32b5:c2ff:fec6:b578",
+//                  "fe80:0:0:0:32b5:c2ff:fec6:b578",
+//                  "fdef:ffc0:4fff:0:32b5:c2ff:fec6:b578"
+//               ],
+        if(typeof ni.network != 'undefined') {
+        if(typeof ni.network.addresses != 'undefined') {
+
+                var row_netaddr = ni.network.addresses;
+row.netaddr = row_netaddr.sort();
+row.netaddrc = row.netaddr.length;
+
+        //        row.netaddr = ni.network.addresses.sort();
+
+
+}
+}
+
+
+
+
+
+
+//            "traffic" : {
+//               "forward" : {
+//                  "bytes" : 860,
+//                  "packets" : 7
+//               },
+//               "mgmt_rx" : {
+//                  "bytes" : 2929722924,
+//                  "packets" : 20574722
+//               },
+//               "mgmt_tx" : {
+//                  "bytes" : 5397276496,
+//                  "packets" : 12247968
+//               },
+//               "rx" : {
+//                  "bytes" : 1879438495,
+//                  "packets" : 25316751
+//               },
+//               "tx" : {
+//                  "bytes" : 12950693,
+//                  "dropped" : 275,
+//                  "packets" : 78607
+//               }
+
+        if(typeof node.statistics != 'undefined') {
+                var stats = node.statistics;
+
+        if(typeof stats.traffic != 'undefined') {
+        if(typeof stats.traffic.forward != 'undefined') {
+                row.trafor = stats.traffic.forward.bytes;
+
+}
+
+        if(typeof stats.traffic.forward != 'undefined') {
+                row.tramgrx = stats.traffic.mgmt_rx.bytes;
+
+}
+        if(typeof stats.traffic.forward != 'undefined') {
+                row.tramgtx = stats.traffic.mgmt_tx.bytes;
+
+}
+        if(typeof stats.traffic.forward != 'undefined') {
+                row.trarx = stats.traffic.rx.bytes;
+
+}
+        if(typeof stats.traffic.forward != 'undefined') {
+                row.tratx = stats.traffic.tx.bytes;
+
+}
+
+
+}
+
+}
+
+
+
 	if(typeof ni.hardware != 'undefined') {
 		row.model = ni.hardware.model;
 		row.nproc = ni.hardware.nproc;
@@ -113,14 +207,40 @@ $.each(nodes, function(i, node){
 		row.gateway = stats.gateway;
 		enums.gateways[row.gateway] = true;
 		if(row.isOnline) {
-			row.uptime = moment().subtract(stats.uptime, 'seconds').toDate();
+//                        row.uptime = moment().subtract(stats.uptime, 'seconds').toDate();
+			row.uptime = ~~(stats.uptime);
+if (row.uptime == 0) {row.uptime = 999999999;}
+
+row.tramgrxu = ~~(row.tramgrx / row.uptime);
+row.tramgtxu = ~~(row.tramgtx / row.uptime);
+
+
+row.style = 'background: #ffff00;';
+
+if (row.uptime >= 3*60) {row.style = 'background: #ffff44;'}
+if (row.uptime >= 10*60) {row.style = 'background: #ffff88;'}
+if (row.uptime >= 30*60) {row.style = 'background: #ffffcc;'}
+if (row.uptime >= 1*3600) {row.style = 'background: #eeffee;'}
+if (row.uptime >= 3*3600) {row.style = 'background: #ddffdd;'}
+if (row.uptime >= 6*3600) {row.style = 'background: #ccffcc;'}
+if (row.uptime >= 12*3600) {row.style = 'background: #bbffbb;'}
+if (row.uptime >= 1*24*3600) {row.style = 'background: #aaffaa;'}
+if (row.uptime >= 3*24*3600) {row.style = 'background: #99ff99;'}
+if (row.uptime >= 10*24*3600) {row.style = 'background: #88ff88;'}
+if (row.uptime >= 30*24*3600) {row.style = 'background: #77ff77;'}
+
+
+
+//                        row.uptime = stats.uptime;
 		}
 		row.rootfsUsage = typeof stats.rootfs_usage != 'undefined' ? stats.rootfs_usage*100 : undefined;
 		row.memoryUsage = typeof stats.memory_usage != 'undefined' ? stats.memory_usage*100 : undefined;
 	}
 	
-	row.firstSeen = moment.utc(node.firstseen).local().toDate();
-	row.lastSeen = moment.utc(node.lastseen).local().toDate();
+//	row.firstSeen = moment.utc(node.firstseen).local().toDate();
+//	row.lastSeen = moment.utc(node.lastseen).local().toDate();
+        row.firstSeen = moment.utc(node.firstseen).local().toDate();
+        row.lastSeen = moment.utc(node.lastseen).local().toDate();
 	
 	if(typeof ni.system != 'undefined') {
 		row.site = ni.system.site_code;
@@ -147,38 +267,57 @@ var renderPercent = function(record, ind, col_ind) {
 }
 
 var cols = [
-	{ resizable: true, sortable: true, field: 'isOnline'    , caption: 'Online'      , size: '40px', render: renderBool, style: 'text-align: center;', hidden: true},
-	{ resizable: true, sortable: true, field: 'isGateway'   , caption: 'Gateway'     , size: '40px', render: renderBool, style: 'text-align: center;', hidden: true},
-	{ resizable: true, sortable: true, field: 'hasVpn'      , caption: 'VPN?'        , size: '40px', render: renderBool, style: 'text-align: center;'},
-	{ resizable: true, sortable: true, field: 'hasNeighbour', caption: 'Link?'       , size: '40px', render: renderBool, style: 'text-align: center;', hidden: true},
-	{ resizable: true, sortable: true, field: 'vpnCnt'      , caption: 'VPNs'        , size: '50px', style: 'text-align: right;', hidden: true},
+	{ resizable: true, sortable: true, field: 'isOnline'    , caption: 'Online'      , size: '40px', render: renderBool, style: 'text-align: center;', hidden: false},
+	{ resizable: true, sortable: true, field: 'isGateway'   , caption: 'GW'     , size: '40px', render: renderBool, style: 'text-align: center;', hidden: false},
+	{ resizable: true, sortable: true, field: 'hasVpn'      , caption: 'VPN'        , size: '40px', render: renderBool, style: 'text-align: center;'},
+	{ resizable: true, sortable: true, field: 'hasNeighbour', caption: 'Link'       , size: '40px', render: renderBool, style: 'text-align: center;', hidden: false},
+	{ resizable: true, sortable: true, field: 'vpnCnt'      , caption: 'VPNs'        , size: '50px', style: 'text-align: right;', hidden: false},
 	{ resizable: true, sortable: true, field: 'neighbourCnt', caption: 'Links'       , size: '50px', style: 'text-align: right;'},
+        { resizable: true, sortable: true, field: 'clients'     , caption: 'Clients'     , size: '50px', style: 'text-align: right;'},
 	{ resizable: true, sortable: true, field: 'id'          , caption: 'Node ID'     , size: '100px', style: 'font-family: monospace;'},
-	{ resizable: true, sortable: true, field: 'hostname'    , caption: 'Hostname'    , size: '10%'},
-	{ resizable: true, sortable: true, field: 'owner'       , caption: 'Owner'       , size: '10%'},
+	{ resizable: true, sortable: true, field: 'hostname'    , caption: 'Hostname'    , size: '200px'},
+	{ resizable: true, sortable: true, field: 'owner'       , caption: 'Owner'       , size: '200px'},
 	{ resizable: true, sortable: true, field: 'version'     , caption: 'Gluon Vers.' , size: '150px'},
-	{ resizable: true, sortable: true, field: 'model'       , caption: 'HW model'    , size: '10%'},
-	{ resizable: true, sortable: true, field: 'nproc'       , caption: 'Procs'       , size: '50px', style: 'text-align: right;', hidden: true},
-	{ resizable: true, sortable: true, field: 'autoupdater' , caption: 'Updates'     , size: '100px'},
-	{ resizable: true, sortable: true, field: 'clients'     , caption: 'Clients'     , size: '50px', style: 'text-align: right;'},
-	{ resizable: true, sortable: true, field: 'gateway'     , caption: 'Gateway'     , size: '50px', style: 'text-align: right;'},
-	{ resizable: true, sortable: true, field: 'site'        , caption: 'Site'        , size: '50px'},
-	{ resizable: true, sortable: true, field: 'uptime'      , caption: 'Uptime'      , size: '80px', render: 'age'},
-	{ resizable: true, sortable: true, field: 'firstSeen'   , caption: 'First seen'  , size: '80px', render: 'age'},
-	{ resizable: true, sortable: true, field: 'lastSeen'    , caption: 'Last seen'   , size: '80px', render: 'age'},
-	{ resizable: true, sortable: true, field: 'rootfsUsage' , caption: '% root'      , size: '50px', render: renderPercent, style: 'text-align: right; position: relative;'},
-	{ resizable: true, sortable: true, field: 'memoryUsage' , caption: '% Mem'       , size: '50px', render: renderPercent, style: 'text-align: right; position: relative;'},
+	{ resizable: true, sortable: true, field: 'model'       , caption: 'HW model'    , size: '200px'},
+	{ resizable: true, sortable: true, field: 'nproc'       , caption: 'Procs'       , size: '40px', style: 'text-align: right;', hidden: true},
+	{ resizable: true, sortable: true, field: 'autoupdater' , caption: 'Updates'     , size: '90px'},
+	{ resizable: true, sortable: true, field: 'gateway'     , caption: 'Gateway'     , size: '110px', style: 'text-align: right;'},
+	{ resizable: true, sortable: true, field: 'site'        , caption: 'Site'        , size: '100px', style: 'text-align: right;'},
+	{ resizable: true, sortable: true, field: 'uptime'      , caption: 'Uptime'      , size: '70px', style: 'text-align: right;'},
+	{ resizable: true, sortable: true, field: 'firstSeen'   , caption: 'First seen'  , size: '80px', render: 'date: DD.MM.YYYY', style: 'text-align: right;'},
+	{ resizable: true, sortable: true, field: 'lastSeen'    , caption: 'Last seen'   , size: '80px', render: 'date: DD.MM.YYYY', style: 'text-align: right;'},
+	{ resizable: true, sortable: true, field: 'rootfsUsage' , caption: '\%root'      , size: '50px', render: renderPercent, style: 'text-align: right; position: relative;'},
+	{ resizable: true, sortable: true, field: 'memoryUsage' , caption: '\%Mem'       , size: '60px', render: renderPercent, style: 'text-align: right; position: relative;'},
+
+        { resizable: true, sortable: true, field: 'loclat'       , caption: 'Latitude'    , size: '100px'},
+        { resizable: true, sortable: true, field: 'loclon'       , caption: 'Longitude'    , size: '100px'},
+
+        { resizable: true, sortable: true, field: 'netaddr'       , caption: 'Addresses'    , size: '700px'},
+        { resizable: true, sortable: true, field: 'netaddrc'      , caption: 'Addr\#'        , size: '50px', style: 'text-align: right;', hidden: false},
+
+
+        { resizable: true, sortable: true, field: 'trafor'       , caption: 'ForwardBytes'    , size: '100px', style: 'text-align: right;'},
+
+        { resizable: true, sortable: true, field: 'tramgrx'       , caption: 'MgmtRXBytes'    , size: '100px', style: 'text-align: right;'},
+        { resizable: true, sortable: true, field: 'tramgtx'       , caption: 'MgmtTXBytes'    , size: '100px', style: 'text-align: right;'},
+        { resizable: true, sortable: true, field: 'trarx'       , caption: 'RXBytes'    , size: '100px', style: 'text-align: right;'},
+        { resizable: true, sortable: true, field: 'tratx'       , caption: 'TXBytes'    , size: '100px', style: 'text-align: right;'},
+        { resizable: true, sortable: true, field: 'tramgrxu'       , caption: 'MgmtRXBpU'    , size: '100px', style: 'text-align: right;'},
+        { resizable: true, sortable: true, field: 'tramgtxu'       , caption: 'MgmtTXBpU'    , size: '100px', style: 'text-align: right;'},
+
+
 ];
 
 $('#grid').w2grid({
 	name: 'grid',
-	header: document.title = nodelistconfig.siteName + ' Knotenliste',
+	header: document.title = '::: ' + nodelistconfig.siteName,
 	show: {
 		header:        true,
 		toolbar:       true,
 		toolbarReload: false,
 		footer:        true,
 		lineNumbers:   true,
+		//expandColumn: true, 
 	},
 	toolbar: {
 		items: [
@@ -186,7 +325,7 @@ $('#grid').w2grid({
 			{ type: 'button', id: 'about', caption: 'About', icon: 'w2ui-icon-question' },
 		],
 		onClick: function (target, data) {
-			if(target.target == 'about') {
+			if(target == 'about') {
 				$('#about-popup').w2popup();
 			}
 		},
@@ -196,21 +335,21 @@ $('#grid').w2grid({
 	records: records,
 	columns: cols,
 	searches: [
-//			{field: 'isOnline'    , caption: 'Is online?'},
-//			{field: 'isGateway'   , caption: 'Is gateway?', type: 'combo', options: {items: [true, false]}},
-		{field: 'vpnCnt'      , caption: 'VPNs'          , type: 'int',  options: {min: 0}},
-		{field: 'neighbourCnt', caption: 'Links'         , type: 'int',  options: {min: 0}},
+			{field: 'isOnline'    , caption: 'Is online?', type: 'combo', options: {items: [true, false]}},
+			{field: 'isGateway'   , caption: 'Is gateway?', type: 'combo', options: {items: [true, false]}},
+		{field: 'vpnCnt'      , caption: 'VPNs'          , type: 'int', options: {min: 0}},
+		{field: 'neighbourCnt', caption: 'Links'         , type: 'int', options: {min: 0}},
 		{field: 'id'          , caption: 'Node ID'       , type: 'text'},
 		{field: 'hostname'    , caption: 'Hostname'      , type: 'text'},
 		{field: 'owner'       , caption: 'Owner'         , type: 'text'},
 		{field: 'version'     , caption: 'Gluon Version' , type: 'enum', options: {items: Object.keys(enums.versions)}},
 		{field: 'model'       , caption: 'Hardware model', type: 'enum', options: {items: Object.keys(enums.models)}},
-		{field: 'nproc'       , caption: '# proc'        , type: 'int',  options: {min: 0}},
+		{field: 'nproc'       , caption: '# proc'        , type: 'int', options: {min: 0}},
 		{field: 'autoupdater' , caption: 'Updates'       , type: 'enum', options: {items: ['Off', 'stable', 'experimental']}},
-		{field: 'clients'     , caption: '# clients'     , type: 'int',  options: {min: 0}},
+		{field: 'clients'     , caption: '# clients'     , type: 'int', options: {min: 0}},
 		{field: 'gateway'     , caption: 'Gateway'       , type: 'enum', options: {items: Object.keys(enums.gateways)}},
 		{field: 'site'        , caption: 'Site'          , type: 'enum', options: {items: Object.keys(enums.sites)}},
-		{field: 'uptime'      , caption: 'Uptime'        , type: 'float'},
+		{field: 'uptime'      , caption: 'Uptime'        , type: 'int'},
 		{field: 'firstSeen'   , caption: 'First seen'    , type: 'date'},
 		{field: 'lastSeen'    , caption: 'Last seen'     , type: 'date'},
 		{field: 'rootfsUsage' , caption: 'Root FS usage' , type: 'percent', outTag: '%'},
@@ -228,8 +367,8 @@ $('#grid').w2grid({
 			
 			$('#'+ event.box_id).w2grid({
 				name: 'subgrid-' + event.recid, 
-				show: { columnHeaders: false },
-				fixedBody: true,
+				show: { columnHeaders: true },
+				fixedBody: false,
 				columns: cols,
 				records: subRecords,
 			});
@@ -237,7 +376,9 @@ $('#grid').w2grid({
 		}, 300);
 	},
 	onDblClick: function(event) {
-		window.open(nodelistconfig.mapPath + '/#!v:m;n:'+records[event.recid].id, '_blank');
+		window.open(nodelistconfig.mapPath + '/#!v:m;n:' + records[event.recid].id, '_blank');
+//                window.open(nodelistconfig.graphPath + 'node?var-node_id=' + records[event.recid].id, '_blank');
+//                window.open(nodelistconfig.graphPath + 'node-graphite?var-node_id=' + records[event.recid].id, '_blank');
 	},
 });
 
