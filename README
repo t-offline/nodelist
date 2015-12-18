@@ -4,13 +4,20 @@
 # Thanks to: Skruppy <skruppy@onmars.eu>
 # 25.09.2015 Christian Pacher
 #
+# 18.12.2015 Christian Pacher
+# use Version at date 08.10.2015: https://github.com/freifunkMUC/nodelist/tree/c6931bdc50b82028ebf967ca2cdb6ece7307c614
+#
 # Do this commands:
 
+cd SOMEWHERE
 mkdir nodelist
 cd nodelist
 mkdir scripts
 mkdir styles
 git clone https://github.com/freifunkMUC/nodelist.git /tmp/nodelist
+cd /tmp/nodelist
+git checkout c6931bdc50b82028ebf967ca2cdb6ece7307c614
+cd SOMEWHERE
 wget http://code.jquery.com/jquery-1.11.3.js -O scripts/jquery.js
 wget http://momentjs.com/downloads/moment.js -O scripts/moment.js
 wget http://w2ui.com/web/downloads/w2ui-1.4.3.zip -O /tmp/w2ui-1.4.3.zip
